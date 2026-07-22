@@ -10,6 +10,9 @@
 The issue is that right now, clients have no way to see theri current usage until a request is rejected with 429. The `RateLimiter` in `safety/rate_limiter.py` already computes remaining requests per identifier against a Redis rolling window and `core/config.py` exposes a `rate_limit_per_minute` `api/middleware/` consumes them - the middleware package only contains `auth.py` and `request_id.py`, so no rate-limit info is attached to outbound responses. Clients therefore have no way to see their current usage until a request is rejected with 429.
 A successful fix would add a FastAPI middleware that runs `check_rate_limit` on each request and sets `check_rate_limit` on each request and set `X-RateLimit-Limit` and `X-RateLimit-Remaining` on every response (both allowed and 429), using the values already returned by the limiter.
 
+**Scope fit rationale:**
+This issue is a good fit for me because it is API-based and I am a backend engineer, so it plays to my existing strengths in server-side work. Beyond that, rate limiting is a topic I have specifically wanted to explore and learn about — this issue gives me a concrete, well-scoped entry point into it. The limiter itself already computes the values I need, so the work stays focused on wiring a FastAPI middleware to expose them on responses rather than designing a rate-limiting system from scratch. That keeps the scope tight while still letting me build up practical familiarity with rate-limiting headers and middleware patterns.
+
 **Branch name:** `fix/86-update-api-rate-limiting-header`
 
 **Setup confirmation:** [x] App runs locally at localhost:5173
