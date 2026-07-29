@@ -18,3 +18,57 @@ This issue is a good fit for me because it is API-based and I am a backend engin
 **Setup confirmation:** [x] App runs locally at localhost:5173
 
 **Cohort ledger:** [x] Issue added to cohort ledger
+
+## Week 8 — Reproduction & solution planning
+
+**Reproduction commit link:** [link to commit documenting the reproduced issue]
+
+**Reproduction summary:**
+
+Confirmed the gap in my local environment against the running backend (`uvicorn` on `localhost:8000`).
+
+**Steps to reproduce:**
+
+1. **Start the backend locally.**
+   From the project root, run `make run`. The FastAPI app comes up on `http://0.0.0.0:8000` (Uvicorn logs `application_startup_completed`).
+
+2. **Verify the server is responding.**
+   ```
+   $ curl -s -o /dev/null -w "HTTP %{http_code}\n" http://localhost:8000/
+   HTTP 200
+   ```
+
+3. **Inspect the response headers on a normal request.**
+   ```
+   $ curl -si http://localhost:8000/ | head -20
+   HTTP/1.1 200 OK
+   date: Wed, 29 Jul 2026 01:28:08 GMT
+   server: uvicorn
+   content-length: 57
+   content-type: application/json
+   x-request-id: 72194da1-2abf-4c88-a218-886d0892e07e
+
+   {"message":"PathReview API is running","version":"1.0.0"}
+   ```
+   Observed: `x-request-id` is present (proves the middleware chain runs on this path) but **no `X-RateLimit-Limit` and no `X-RateLimit-Remaining` header is returned.** Same result on `/health`.
+
+4. **Confirm the limiter is not enforcing either — hit `/` 100 times in a row and tally status codes.**
+   ```
+   $ for i in $(seq 1 100); do curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8000/; done | sort | uniq -c
+    100 200
+   ```
+   All 100 requests returned `200`. No `429` is ever emitted, which means the rate limiter is not on the request path at all — not just missing headers, but fully unwired.
+
+5. **Locate the gap in code.**
+   - `safety/rate_limiter.py:21-63` — `RateLimiter.check_rate_limit()` already returns `(allowed, remaining)`, so the values needed for the headers are computed and available.
+   - `api/middleware/` — contains only `auth.py` and `request_id.py`; no rate-limit middleware exists.
+   - `api/main.py:44-54` — registers `CORSMiddleware` and `RequestIDMiddleware`; `RateLimiter` is never instantiated or added to the app.
+   - `grep -rn RateLimiter api/` returns no matches, confirming the API layer never touches the limiter class.
+
+**What this proves:** the issue is real and reproducible in my local environment. The `RateLimiter` class exists in `safety/` but has never been wired into the FastAPI request lifecycle, so no `X-RateLimit-*` headers are attached to any response and no request is ever throttled. The fix will live in a new `api/middleware/rate_limit.py` (modeled on `request_id.py`) and its registration in `api/main.py`.
+
+**PLAN.md link:** [link to PLAN.md in your fork]
+
+**Walkthrough video (recommended):** [link to your Loom video, ≤2 min — recommended, not graded]
+
+**Blockers or open questions:**
