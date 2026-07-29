@@ -21,7 +21,7 @@ This issue is a good fit for me because it is API-based and I am a backend engin
 
 ## Week 8 — Reproduction & solution planning
 
-**Reproduction commit link:** [link to commit documenting the reproduced issue]
+**Reproduction commit link:** https://github.com/Urvashi74/pathreview/commit/b6afab23dba618ae2870b5ef562a9a5ca84181a9
 
 **Reproduction summary:**
 
