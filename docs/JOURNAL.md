@@ -67,8 +67,8 @@ Confirmed the gap in my local environment against the running backend (`uvicorn`
 
 **What this proves:** the issue is real and reproducible in my local environment. The `RateLimiter` class exists in `safety/` but has never been wired into the FastAPI request lifecycle, so no `X-RateLimit-*` headers are attached to any response and no request is ever throttled. The fix will live in a new `api/middleware/rate_limit.py` (modeled on `request_id.py`) and its registration in `api/main.py`.
 
-**PLAN.md link:** [link to PLAN.md in your fork]
+**PLAN.md link:** https://github.com/Urvashi74/pathreview/blob/fix/86-update-api-rate-limiting-header/docs/PLAN.md
 
-**Walkthrough video (recommended):** [link to your Loom video, ≤2 min — recommended, not graded]
+**Walkthrough video (recommended):** 
 
 **Blockers or open questions:**
