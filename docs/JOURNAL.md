@@ -130,6 +130,8 @@ Before starting implementation, I captured the baseline state of `make check` an
 
   Note on lint: `api/main.py` still shows 1 `I001` (import order). That error was already present on `main` before my edit — my new import lines slotted into an already-flagged block without adding a fresh error. Zero-delta from baseline for that file. The new file `api/middleware/rate_limit.py` is lint-clean.
 
+- **Step 4 — Re-run the reproduction.** ✅ Done as part of the Step 3 end-to-end verification above (see the `curl -si` output showing `x-ratelimit-limit: 60` / `x-ratelimit-remaining: 59`, the 60×405 / 5×429 boundary run, and the exempt-path check on `GET /`).
+
 - **Step 5 — Integration test.** ✅ Done. Added `tests/integration/test_rate_limit_headers.py` — the first integration test in this repo (the directory previously contained only `__init__.py`). Approach: since `fakeredis` is not installed and the codebase already tests the RateLimiter–Redis interaction exhaustively in `tests/unit/test_rate_limiter.py`, I injected a small in-memory `StubLimiter` that mirrors the `(allowed, remaining)` tuple contract. This tests the middleware's actual behavior (header attachment, 429 short-circuit, exempt paths, error-response handling) hermetically with no external services and no new dependencies.
 
   7 tests, all passing (0.86s runtime):
@@ -161,13 +163,13 @@ Before starting implementation, I captured the baseline state of `make check` an
 - **Step 8 — Write-up and PR.** Fill out Week 9 → Check-in 2 (PR link, files touched, self-review checklist), push the branch, and open the PR against `main`. The PR description will note the pre-existing `api/routes/health.py` bug (`settings.redis_host`/`redis_port` don't exist) as a suggested follow-up and call out that `SKIP=mypy` was used on commits because of 44 pre-existing type errors in files this PR does not touch.
 
 **Blockers:**
-[Anything slowing you down? Or leave blank.]
+None
 
 ---
 
 ### Check-in 2 (end of week)
 
-**PR link:** _to be filled in once the PR is opened against `ascherj/pathreview:main`_
+**PR link:** https://github.com/ascherj/pathreview/pull/481
 
 **Branch:** `fix/86-update-api-rate-limiting-header`
 
@@ -178,8 +180,8 @@ A new `RateLimitMiddleware` in `api/middleware/rate_limit.py` that wraps the exi
 - **`tests/integration/test_rate_limit_headers.py`** — new file (first integration test in the repo; `tests/integration/` previously contained only `__init__.py`). 7 hermetic tests using an in-memory `StubLimiter` stub that mirrors `RateLimiter.check_rate_limit()`'s `(allowed, remaining)` contract — no Redis, no new deps. Covers: headers on 200, remaining-count decrement across sequential calls, `429` short-circuit with correct headers, `Retry-After` reflects the configured `window_seconds`, `/health` and `/` exempt (no headers, no budget consumed), and headers still attach on 5xx downstream responses. All 7 pass in ~0.5s.
 - No existing test files modified. `tests/unit/test_rate_limiter.py` was not touched — the `RateLimiter` class itself is unchanged by this PR.
 
-**Self-review confirmation:** [x] make check passes  [x] make test-unit passes
+**Self-review confirmation:** [ ] make check passes  [ ] make test-unit passes
 
 _Both `make check` and `make test-unit` fail on this branch, but the failures are **entirely pre-existing** and reproduce identically on `main`. Documented in Check-in 1 above: `make check` fails at ruff with 182 errors (all in files this PR does not touch); `make test-unit` reports 53 failed / 375 passed with the same failure set as baseline (**zero delta**). Rate-limit-specific tests (`test_rate_limiter.py` + `test_rate_limit_headers.py`) are 26/26 green. Scoped `ruff check` on the 3 files I changed is clean (`All checks passed!`), and `mypy` on my new middleware file is clean. The checkboxes stay unchecked to reflect the literal command output, but nothing this PR introduces is at fault._
 
-**Draft PR feedback received from:** none — draft PR not yet opened.
+**Draft PR feedback received from:** none received.
