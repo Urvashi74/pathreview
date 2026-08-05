@@ -187,3 +187,34 @@ A new `RateLimitMiddleware` in `api/middleware/rate_limit.py` that wraps the exi
 _Both `make check` and `make test-unit` fail on this branch, but the failures are **entirely pre-existing** and reproduce identically on `main`. Documented in Check-in 1 above: `make check` fails at ruff with 182 errors (all in files this PR does not touch); `make test-unit` reports 53 failed / 375 passed with the same failure set as baseline (**zero delta**). Rate-limit-specific tests (`test_rate_limiter.py` + `test_rate_limit_headers.py`) are 26/26 green. Scoped `ruff check` on the 3 files I changed is clean (`All checks passed!`), and `mypy` on my new middleware file is clean. The checkboxes stay unchecked to reflect the literal command output, but nothing this PR introduces is at fault._
 
 **Draft PR feedback received from:** none received.
+
+## Week 10 — Iteration & reflection
+
+### Reviewer feedback
+
+**Feedback received:** [ ] Yes  [x] No — still awaiting review
+
+**Summary of feedback:**
+I did not receive any feedback or review.
+
+**How you responded:**
+Since there wasn't any feedback or review, I didn't have to respond.
+
+---
+
+### Reflection
+
+**What was harder than you expected?**
+The initial setup was harder than expected for me, docker installation took me much longer than I thought, and even when I thought it was setup, it wasn't until later that I figured out that there was some more stuff to do. Understanding the codebase was harder than I expected. Even though the issue description mentioned the files, it took me sometime to figure out that my issue wasn't a quick fix like adding a header, instead it was me finding out what the current design is and then implementing accordingly.
+
+**What did you learn about working in a large codebase?**
+It took me a long time to understand lot of little things. The structure was clear in the codebase, and still not really familiar. It was really helpful to first understand the code base structure, the naming conventions for functions, the pattern of test cases and services - before working on the fix. The codebase having an `ARCHITECTURE.md` really helped to create a base understanding.
+
+**How did AI tools help — and where did they fall short?**
+AI Tools definitely helped a lot in making the process of resolving the issue quicker. I took Claude's help to not just figure out the purpose of each service defined, but also to build my Plan.md and then also perform the execution of the plan step-by-step. AI helped out in recreating the issue, I wasn't very adept in using curl commands, but over the course I have realised it's a very easy way to test out different segments of a codebase, without having to writte out full blown tests or executing a particular scenario in the UI. One place AI fell short, is sometimes when working with large chunks of text, for example the `PLAN.md` file, if I missed out on prompting in detail, it could misbehave in writing out the documentation. With AI, I still had to actually understand every single line of code changed or created - not really a drawback, but it also made me unsure about the actual implementation which then led me to spend more time in verification. 
+
+**What would you do differently if you started over?**
+I think I might have picked a tier-3 issue. I was not confident since this was the first time I was working on Open Source Style project, but with 6+ years in the industry (albeit in JAVA), I wasn't confident about having the time to work on it. But with AI, it definitely speeds up the process of writing code and building solutions.
+
+**What are you most proud of from this module?**
+Really proud of how well the use of AI has culminated for me. I usually work with JAVA, so this was a really nice way of working with FASTAPI. Being able to contribute in an entirely unseen project was really exciting. I have also been very proud about using the git commit message format! At my work I have never really stuck with any kind of structure with the commits or commit messages, I would like to take this sort of organized version control back to my daily work - the version control does look beautiful this way. I am also very proud of being able to test things using a simple curl command instead of writing out test cases (which are less enjoyable to me).
